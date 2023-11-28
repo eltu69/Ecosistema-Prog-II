@@ -249,11 +249,44 @@ class Meteorite(pygame.sprite.Sprite):
         distance = math.sqrt((position[0] - self.rect.centerx)**2 + (position[1] - self.rect.centery)**2)
         return distance <= self.radius
 
+
+class Fire(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.initial_radius = 10
+        self.max_radius = 40
+        self.image = pygame.Surface((self.initial_radius * 2, self.initial_radius * 2), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, (255, 165, 0, 128), (self.initial_radius, self.initial_radius), self.initial_radius)
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.burning_time = 180  # Duración del incendio en ciclos (3 segundos a 60 FPS)
+        self.max_burning_time = self.burning_time
+
+    def update(self):
+        if self.burning_time > 0:
+            # Ajusta el tamaño del fuego según el tiempo restante
+            current_radius = int(self.initial_radius + (self.max_radius - self.initial_radius) *
+                                 (1 - self.burning_time / self.max_burning_time))
+            self.image = pygame.Surface((current_radius * 2, current_radius * 2), pygame.SRCALPHA)
+            pygame.draw.circle(self.image, (255, 165, 0, 128), (current_radius, current_radius), current_radius)
+            self.burning_time -= 1
+            # Verifica si hay colisiones con plantas, herbívoros y carnívoros
+            for group in [plants, herbivores, carnivores]:
+                for organism in pygame.sprite.spritecollide(self, group, False):
+                    # Reduce la energía de las plantas y elimina herbívoros y carnívoros
+                    if isinstance(organism, Plant):
+                        organism.energy -= 2
+                    elif isinstance(organism, Herbivore) or isinstance(organism, Carnivore):
+                        organism.kill()
+        else:
+            self.kill()
+
 # Creación de grupos de sprites
 plants = pygame.sprite.Group()
 herbivores = pygame.sprite.Group()
 carnivores = pygame.sprite.Group()
 meteorites = pygame.sprite.GroupSingle()
+fires = pygame.sprite.Group()
 
 # Función para contar cada 5 segundos
 def count_timer():
@@ -296,29 +329,38 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            # Evento de incendio al presionar la tecla ESPACIO
+            x = random.randint(0, width - 30)
+            y = random.randint(0, height - 30)
+            new_fire = Fire(x, y)
+            fires.add(new_fire)
 
     # Probabilidad de crear nuevas plantas
-    if random.random() < 0.2:
+    if random.random() < 10:
         x = random.randint(0, width - 10)
         y = random.randint(0, height - 10)
         plant = Plant(x, y)
         plants.add(plant)
+
+    
 
     # Actualización de los grupos de sprites
     plants.update()
     herbivores.update()
     carnivores.update()
     meteorites.update()
+    fires.update()
 
     screen.fill(white)
     plants.draw(screen)
     herbivores.draw(screen)
     carnivores.draw(screen)
     meteorites.draw(screen)
+    fires.draw(screen)
 
     counter_value = next(counter_generator)
     meteorite.strike(counter_value, plants, herbivores, carnivores)
-    
 
     text = font.render(f"Plantas: {len(plants)} Herbívoros: {len(herbivores)} Carnívoros: {len(carnivores)} Ciclos: {counter_value}", True, black)
     screen.blit(text, (10, 10))
