@@ -281,12 +281,35 @@ class Fire(pygame.sprite.Sprite):
         else:
             self.kill()
 
+class Raindrop(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.size = 2
+        self.image = pygame.Surface((self.size, self.size))
+        self.image.fill(blue)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(0, width)
+        self.rect.y = random.randint(0, height)
+        self.lifespan = 180  # Duración de la lluvia en ciclos (3 segundos a 60 FPS)
+
+    def update(self, plants):
+        # Verificar colisiones con plantas y aumentar su energía
+        for plant in pygame.sprite.spritecollide(self, plants, False):
+            plant.energy += 5
+
+        # Reducir el temporizador y eliminar la gota de lluvia si ha alcanzado su límite de vida
+        self.lifespan -= 1
+        if self.lifespan <= 0:
+            self.kill()
+
+
 # Creación de grupos de sprites
 plants = pygame.sprite.Group()
 herbivores = pygame.sprite.Group()
 carnivores = pygame.sprite.Group()
 meteorites = pygame.sprite.GroupSingle()
 fires = pygame.sprite.Group()
+raindrops = pygame.sprite.Group()
 
 # Función para contar cada 5 segundos
 def count_timer():
@@ -329,12 +352,18 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            # Evento de incendio al presionar la tecla ESPACIO
-            x = random.randint(0, width - 30)
-            y = random.randint(0, height - 30)
-            new_fire = Fire(x, y)
-            fires.add(new_fire)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                # Evento de incendio al presionar la tecla ESPACIO
+                x = random.randint(0, width - 30)
+                y = random.randint(0, height - 30)
+                new_fire = Fire(x, y)
+                fires.add(new_fire)
+            elif event.key == pygame.K_a:
+                # Evento de lluvia al presionar la tecla A
+                for _ in range(50):  # Número de gotas de lluvia
+                    raindrop = Raindrop()
+                    raindrops.add(raindrop)
 
     # Probabilidad de crear nuevas plantas
     if random.random() < 10:
@@ -351,6 +380,10 @@ while running:
     carnivores.update()
     meteorites.update()
     fires.update()
+    raindrops.update(plants)
+    for raindrop in raindrops.sprites():
+        if raindrop.lifespan <= 0:
+            raindrop.kill()
 
     screen.fill(white)
     plants.draw(screen)
@@ -358,6 +391,7 @@ while running:
     carnivores.draw(screen)
     meteorites.draw(screen)
     fires.draw(screen)
+    raindrops.draw(screen)
 
     counter_value = next(counter_generator)
     meteorite.strike(counter_value, plants, herbivores, carnivores)
