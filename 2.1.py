@@ -52,7 +52,7 @@ class Plant(pygame.sprite.Sprite):
             self.reproduce()
 
     def reproduce(self):
-        # Genera nuevas plantas cercanas con energía dividida
+    # Genera nuevas plantas cercanas con energía dividida
         x = self.rect.x + random.randint(-50, 50)
         y = self.rect.y + random.randint(-50, 50)
         x = max(0, min(x, width - self.radius * 2))
@@ -60,6 +60,13 @@ class Plant(pygame.sprite.Sprite):
         new_plant = Plant(x, y)
         plants.add(new_plant)
         self.energy /= 2
+
+        # Asegura que siempre haya al menos dos plantas
+        if len(plants) < 2:
+            x = random.randint(0, width - 10)
+            y = random.randint(0, height - 10)
+            new_plant = Plant(x, y)
+            plants.add(new_plant)
 
 # Definición de la clase Herbivore
 class Herbivore(pygame.sprite.Sprite):
@@ -126,7 +133,7 @@ class Herbivore(pygame.sprite.Sprite):
             plant.energy -= 5
 
     def reproduce(self):
-        # Genera nuevos herbívoros cercanos con energía dividida
+    # Genera nuevos herbívoros cercanos con energía dividida
         x = self.rect.x + random.randint(-50, 50)
         y = self.rect.y + random.randint(-50, 50)
         x = max(0, min(x, width - self.radius * 2))
@@ -134,6 +141,13 @@ class Herbivore(pygame.sprite.Sprite):
         new_herbivore = Herbivore(x, y)
         herbivores.add(new_herbivore)
         self.energy /= 2
+
+        # Asegura que siempre haya al menos dos herbívoros
+        if len(herbivores) < 2:
+            x = random.randint(0, width - 20)
+            y = random.randint(0, height - 20)
+            new_herbivore = Herbivore(x, y)
+            herbivores.add(new_herbivore)
 
 # Definición de la clase Carnivore
 class Carnivore(pygame.sprite.Sprite):
@@ -205,6 +219,13 @@ class Carnivore(pygame.sprite.Sprite):
         new_carnivore = Carnivore(x, y)
         carnivores.add(new_carnivore)
         self.energy /= 2
+
+        # Asegura que siempre haya al menos dos carnívoros
+        if len(carnivores) < 2:
+            x = random.randint(0, width - 30)
+            y = random.randint(0, height - 30)
+            new_carnivore = Carnivore(x, y)
+            carnivores.add(new_carnivore)
 
 # Definición de la clase Meteorite
 class Meteorite(pygame.sprite.Sprite):
