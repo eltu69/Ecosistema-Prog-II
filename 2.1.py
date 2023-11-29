@@ -35,7 +35,7 @@ class Plant(pygame.sprite.Sprite):
     
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.radius = 15  # Añade esta línea para definir el atributo radius
+        self.radius = 5  # Añade esta línea para definir el atributo radius
         image_path = random.choice(self.images)  # Selecciona una imagen aleatoria de la lista
         self.image = pygame.image.load(image_path)  # Carga la imagen
         self.image = pygame.transform.scale(self.image, (self.radius * 2, self.radius * 2))  # Ajusta el tamaño de la imagen
@@ -141,7 +141,7 @@ class Carnivore(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.radius = 20  # Añade esta línea para definir el atributo radius
+        self.radius = 15  # Añade esta línea para definir el atributo radius
         image_path = random.choice(self.images)  # Selecciona una imagen aleatoria de la lista
         self.image = pygame.image.load(image_path)  # Carga la imagen
         self.image = pygame.transform.scale(self.image, (self.radius * 2, self.radius * 2))  # Ajusta el tamaño de la imagen
@@ -211,11 +211,11 @@ class Meteorite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.radius = 100  # Radio de impacto del meteorito
-        self.image = pygame.Surface((self.radius * 2, self.radius * 2))
-        pygame.draw.circle(self.image, blue, (self.radius, self.radius), self.radius)
-        self.image.set_colorkey((0, 0, 0))
+        self.image = pygame.image.load('meteorito.png')  # Carga la imagen
+        self.image = pygame.transform.scale(self.image, (self.radius * 2, self.radius * 2))  # Ajusta el tamaño de la imagen
         self.rect = self.image.get_rect()
-        self.rect.center = (-100, -100)  # Inicialmente fuera de la pantalla
+        self.rect.center = (-100, -100)  # Posición inicial fuera de la pantalla
+        self.strike_position = None  # Posición del impacto
 
     def strike(self, counter_value, plants, herbivores, carnivores):
         # Verifica si el contador es mayor que cero y es un múltiplo de 10 (cambiar a 100 para golpear cada 100 ciclos)
@@ -263,8 +263,8 @@ class Fire(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.initial_radius = 10
         self.max_radius = 40
-        self.image = pygame.Surface((self.initial_radius * 2, self.initial_radius * 2), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, (255, 165, 0, 128), (self.initial_radius, self.initial_radius), self.initial_radius)
+        self.image = pygame.image.load('fire.png')  # Agrega la ruta de la imagen del fuego
+        self.image = pygame.transform.scale(self.image, (self.initial_radius * 2, self.initial_radius * 2))  # Ajusta el tamaño de la imagen
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.burning_time = 180  # Duración del incendio en ciclos (3 segundos a 60 FPS)
@@ -275,8 +275,8 @@ class Fire(pygame.sprite.Sprite):
             # Ajusta el tamaño del fuego según el tiempo restante
             current_radius = int(self.initial_radius + (self.max_radius - self.initial_radius) *
                                  (1 - self.burning_time / self.max_burning_time))
-            self.image = pygame.Surface((current_radius * 2, current_radius * 2), pygame.SRCALPHA)
-            pygame.draw.circle(self.image, (255, 165, 0, 128), (current_radius, current_radius), current_radius)
+            self.image = pygame.image.load('fire.png')  # Recarga la imagen del fuego
+            self.image = pygame.transform.scale(self.image, (current_radius * 2, current_radius * 2))  # Ajusta el tamaño de la imagen
             self.burning_time -= 1
             # Verifica si hay colisiones con plantas, herbívoros y carnívoros
             for group in [plants, herbivores, carnivores]:
@@ -380,8 +380,6 @@ while running:
         plant = Plant(x, y)
         plants.add(plant)
 
-    
-
     # Actualización de los grupos de sprites
     plants.update()
     herbivores.update()
@@ -404,8 +402,17 @@ while running:
     counter_value = next(counter_generator)
     meteorite.strike(counter_value, plants, herbivores, carnivores)
 
-    text = font.render(f"Plantas: {len(plants)} Herbívoros: {len(herbivores)} Carnívoros: {len(carnivores)} Ciclos: {counter_value}", True, black)
-    screen.blit(text, (10, 10))
+    # Renderizar y mostrar los textos
+    text_a = font.render('Presiona "A" para hacer llover (Recomendable solo presionar una vez)', True, black)
+    text_space = font.render('Presiona "ESPACIO" para hacer un incendio forestal', True, black)
+    text_meteorito = font.render('Cada 10 ciclos caera un meteorito', True, black)
+    screen.blit(text_a, (10, height - 60))
+    screen.blit(text_space, (10, height - 30))
+    screen.blit(text_meteorito, (10, height - 90))
+
+    # Renderizar y mostrar estadísticas
+    text_stats = font.render(f"Plantas: {len(plants)} Herbívoros: {len(herbivores)} Carnívoros: {len(carnivores)} Ciclos: {counter_value}", True, black)
+    screen.blit(text_stats, (10, 10))
 
     pygame.display.flip()
     clock.tick(fps)
