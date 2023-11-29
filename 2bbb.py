@@ -54,7 +54,7 @@ class Plant(pygame.sprite.Sprite):
         self.energy /= 2
 
 class Herbivore(pygame.sprite.Sprite):
-    images = ['herviboro.png', 'herviboro2.png']  # Lista de imágenes
+    images = ['herviboro.png', 'herviboro2.png', 'herviboro3.png' , 'herviboro4.png']  # Lista de imágenes
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -121,7 +121,7 @@ class Herbivore(pygame.sprite.Sprite):
         self.energy /= 2
 
 class Carnivore(pygame.sprite.Sprite):
-    images = ['carnivoro.png']  # Lista de imágenes
+    images = ['carnivoro.png','carnivoro2.png','carnivoro3.png','carnivoro4.png']  # Lista de imágenes
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -186,12 +186,9 @@ class Carnivore(pygame.sprite.Sprite):
 class Meteorite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.radius = 10  # Radio inicial del meteorito
-        self.max_radius = 100  # Radio máximo del meteorito
-        self.growth_rate = 1  # Cuánto crece el meteorito en cada ciclo
-        self.image = pygame.Surface((self.radius * 2, self.radius * 2))
-        pygame.draw.circle(self.image, blue, (self.radius, self.radius), self.radius)
-        self.image.set_colorkey((0, 0, 0))
+        self.radius = 100  # Radio de impacto del meteorito
+        self.image = pygame.image.load('meteorito.png')  # Carga la imagen
+        self.image = pygame.transform.scale(self.image, (self.radius * 2, self.radius * 2))  # Ajusta el tamaño de la imagen
         self.rect = self.image.get_rect()
         self.rect.center = (-100, -100)  # Posición inicial fuera de la pantalla
         self.strike_position = None  # Posición del impacto
